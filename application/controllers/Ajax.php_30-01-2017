@@ -1,0 +1,1569 @@
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
+class Ajax extends Front_Controller {
+
+	function __construct() {
+
+		parent::__construct();
+
+		if ( $_SERVER['XHERB_BASE'] != base_url() )
+			show_404();
+	}
+
+	public function update_token() {
+
+		exit( json_encode( array( 'token' => $this->security->get_csrf_hash() ) ) );
+	}
+
+	/**
+	 * Index Page for this controller.
+	 *
+	 * Maps to the following URL
+	 * 		http://example.com/index.php/welcome
+	 *	- or -
+	 * 		http://example.com/index.php/welcome/index
+	 *	- or -
+	 * Since this controller is set as the default controller in
+	 * config/routes.php, it's displayed at http://example.com/
+	 *
+	 * So any other public methods not prefixed with an underscore will
+	 * map to /index.php/welcome/<method_name>
+	 * @see http://codeigniter.com/user_guide/general/urls.html
+	 */
+	public function index()
+	{
+		redirect('');
+	}
+
+	public function reg_check( $what )
+	{
+		$method = $what.'_check';
+		$value = $this->input->post( 'value' );
+		echo $this->user_model->$method( $value ) ? 'fa-ban' : 'fa-check';
+		exit;
+	}
+
+	public function user_upload( $user_id )
+	{
+		if ( $user_id != $this->user->ID ) {
+			echo json_encode( array( 'error' => 'Not your account!' ) );
+			return false;
+			exit;
+		}
+
+		$config['upload_path'] = './assets/user/' . $user_id . '/';
+		$config['allowed_types'] = 'gif|jpg|png';
+		$config['max_size']	= '10000';
+		$config['max_width']  = '5000';
+		$config['max_height']  = '5000';
+
+		if (!file_exists($config['upload_path'] )) {
+			mkdir($config['upload_path'] , 0777, true);
+			mkdir($config['upload_path'].'cache/' , 0777, true);
+		}
+
+		$this->load->library('upload', $config);
+
+		if ( ! $this->upload->do_upload( 'files' ))
+		{
+			echo json_encode( array( 'error' => strip_tags( $this->upload->display_errors() ) ) );
+			return false;
+			exit;
+		}
+
+		$data = $this->upload->data();
+		echo json_encode( array( 'url' => site_url( 'assets/user/' . $user_id . '/' . $data['file_name'] ), 'name' => $data['file_name'] ) );
+		exit;
+	}
+
+	public function listing_upload( $id )
+	{
+		$config['upload_path'] = './assets/listing/' . $id . '/';
+		$config['allowed_types'] = 'gif|jpg|png';
+		$config['max_size']	= '10000';
+		$config['max_width']  = '5000';
+		$config['max_height']  = '5000';
+
+		if (!file_exists($config['upload_path'] )) {
+			mkdir($config['upload_path'] , 0777, true);
+			mkdir($config['upload_path'].'cache/' , 0777, true);
+		}
+
+		$this->load->library('upload', $config);
+
+		if ( ! $this->upload->do_upload( 'files' ))
+		{
+			echo json_encode( array( 'error' => strip_tags( $this->upload->display_errors() ) ) );
+			return false;
+			exit;
+		}
+
+		$data = $this->upload->data();
+		echo json_encode( array( 'url' => site_url( 'assets/listing/' . $id . '/' . $data['file_name'] ), 'name' => $data['file_name'] ) );
+		exit;
+	}
+
+	public function listing_avatar_upload( $id )
+	{
+		$config['upload_path'] = './assets/listing_avatar/' . $id . '/';
+		$config['allowed_types'] = 'gif|jpg|png';
+		$config['max_size']	= '10000';
+		$config['max_width']  = '5000';
+		$config['max_height']  = '5000';
+
+		if (!file_exists($config['upload_path'] )) {
+			mkdir($config['upload_path'] , 0777, true);
+			mkdir($config['upload_path'].'cache/' , 0777, true);
+		}
+
+		$this->load->library('upload', $config);
+
+		if ( ! $this->upload->do_upload( 'files' ))
+		{
+			echo json_encode( array( 'error' => strip_tags( $this->upload->display_errors() ) ) );
+			return false;
+			exit;
+		}
+
+		$data = $this->upload->data();
+		echo json_encode( array( 'url' => site_url( 'assets/listing_avatar/' . $id . '/' . $data['file_name'] ), 'name' => $data['file_name'] ) );
+		exit;
+	}
+
+	public function user_avatar_upload( $id )
+	{
+		if ( $id != $this->user->ID ) {
+			echo json_encode( array( 'error' => 'Not your account!' ) );
+			return false;
+			exit;
+		}
+
+		$config['upload_path'] = './assets/user_avatar/' . $id . '/';
+		$config['allowed_types'] = 'gif|jpg|png';
+		$config['max_size']	= '10000';
+		$config['max_width']  = '5000';
+		$config['max_height']  = '5000';
+
+		if (!file_exists($config['upload_path'] )) {
+			mkdir($config['upload_path'] , 0777, true);
+			mkdir($config['upload_path'].'cache/' , 0777, true);
+		}
+
+		$this->load->library('upload', $config);
+
+		if ( ! $this->upload->do_upload( 'files' ))
+		{
+			echo json_encode( array( 'error' => strip_tags( $this->upload->display_errors() ) ) );
+			return false;
+			exit;
+		}
+
+		$data = $this->upload->data();
+		echo json_encode( array( 'url' => site_url( 'assets/user_avatar/' . $id . '/' . $data['file_name'] ), 'name' => $data['file_name'] ) );
+		exit;
+	}
+
+	public function product_upload( $id )
+	{
+		$config['upload_path'] = './assets/products/' . $id . '/';
+		$config['allowed_types'] = 'gif|jpg|png';
+		$config['max_size']	= '10000';
+		$config['max_width']  = '5000';
+		$config['max_height']  = '5000';
+
+		if ( !file_exists( $config['upload_path'] ) ) {
+			mkdir($config['upload_path'] , 0777, true);
+			mkdir($config['upload_path'].'cache/' , 0777, true);
+		}
+
+		$this->load->library('upload', $config);
+
+		if ( ! $this->upload->do_upload( 'files' ))
+		{
+			echo json_encode( array( 'error' => strip_tags( $this->upload->display_errors() ) ) );
+			return false;
+		}
+		exit;
+	}
+
+	public function manage_media( $type, $id ) {
+		switch ( $type ) {
+			case 'listing-gallery':
+				$gallery = json_decode( $this->listing_model->get_gallery( $id ) );
+			break;
+			case 'listing_avatar-gallery':
+				$gallery = json_decode( $this->listing_model->get_avatar_gallery( $id ) );
+			break;
+			case 'user-gallery':
+				$gallery = json_decode( $this->user_model->get_gallery( $id ) );
+			break;
+			case 'user_avatar-gallery':
+				$gallery = json_decode( $this->user_model->get_avatar_gallery( $id ) );
+			break;
+		}
+
+		$type = str_replace( '-gallery', '', $type );
+		?>
+		<div class="gallery-messages">
+		</div>
+		<div class="clearfix">
+			<span class="btn btn-success fileinput-button">
+				<i class="glyphicon glyphicon-plus"></i>
+				<span>Select files...</span>
+				<!-- The file input field used as target for the file upload widget -->
+				<input id="fileupload" type="file" name="files">
+			</span>
+		</div>
+		<br />
+		<!-- The global progress bar -->
+		<div id="progress" class="progress">
+			<div class="progress-bar progress-bar-success"></div>
+		</div>
+		<div class="row" id="gallery_manager">
+			<?php foreach ($gallery as $image): ?>
+				<div class="col-xs-12 col-sm-6 col-md-3 gallery-item">
+					<?php echo anchor('assets/' . $type . '/' . $id . '/' . $image->name, img(array(
+						'src' 		=> image_thumb('assets/' . $type . '/' . $id . '/' . $image->name, 500, 500, false),
+						'class'		=> 'gallery-thumbnail round-all'
+						)),
+						'rel="prettyPhoto[listing_gallery]"'); ?>
+					<?php if ( strstr( $type, 'avatar' ) ): ?>
+					<button class="btn btn-info gallery-avatar" data-type="<?php echo $type; ?>" data-id="<?php echo $id; ?>" data-file-name="<?php echo $image->name; ?>">Make Avatar?</button>
+					<?php endif; ?>
+					<button class="gallery-remove btn btn-danger" data-type="<?php echo $type; ?>" data-id="<?php echo $id; ?>" data-file-name="<?php echo $image->name; ?>">Delete?</button>
+				</div>
+			<?php endforeach ?>
+		</div>
+		<?php
+		exit;
+	}
+
+	public function del_media( $folder, $id, $filename )
+	{
+		unlink( 'assets/' . $folder . '/' . $id . '/' . $filename );
+
+		return json_encode(array( 'message' => 'file deleted' ) );
+	}
+
+	public function set_avatar( $folder, $id, $filename ) {
+		$user_id = $id;
+		$type = str_replace( '_avatar', '', $folder ).'_model';
+
+		if( $folder == 'listing_avatar' ) {
+			$listing = $this->listing_model->get_listing( $id );
+			$user_id = $listing->user_id;
+		}
+
+		if ( $user_id != $this->user->ID ) {
+			echo json_encode( array( 'error' => 'You are trying to edit an account that doesn\'t belong to you.' ) );
+			exit;
+		}
+
+		$this->$type->set_avatar( $id, $filename );
+
+		echo json_encode( array( 'url' => site_url( "assets/$folder/$id/$filename" ) ) );
+		exit;
+	}
+
+	public function edit_media( $folder, $id, $filename )
+	{
+		$data = json_decode( $_POST['data'] );
+		$src = 'assets/' . $folder . '/' . $id . '/' . $filename;
+		$dst = 'assets/' . $folder . '/' . $id . '/' . $filename;
+		$src_img = false;
+		list( $width, $height, $type, $attr ) = getimagesize($src);
+		$return = array(
+			'error' => '',
+			'src'	=> site_url( $dst )
+		);
+
+		// print_r( $data );
+		// $config['image_library'] 	= 'gd2';
+		// $config['source_image']		= 'assets/' . $folder . '/' . $id . '/' . $filename;
+		// $config['create_thumb'] 	= false;
+		// $config['maintain_ratio'] 	= false;
+		// $config['width']			= $data->width;
+		// $config['height']			= $data->height;
+		// $config['x_axis'] 			= $data->x;
+		// $config['y_axis'] 			= $data->y;
+		// $config['rotation_angle'] 	= $data->rotate;
+
+		// $this->image_lib->initialize($config);
+
+		// if ( ! $this->image_lib->resize())
+		// {
+		// 	echo $this->image_lib->display_errors();
+		// }
+
+		// if ( ! $this->image_lib->crop())
+		// {
+		// 	echo $this->image_lib->display_errors();
+		// }
+
+		if (!empty($src) && !empty($dst) && !empty($data)) {
+		switch ($type) {
+		  case IMAGETYPE_GIF:
+			$src_img = @imagecreatefromgif($src);
+			break;
+
+		  case IMAGETYPE_JPEG:
+			$src_img = @imagecreatefromjpeg($src);
+			break;
+
+		  case IMAGETYPE_PNG:
+			$src_img = @imagecreatefrompng($src);
+			break;
+		}
+
+		if (!$src_img) {
+		  $return['error'] = "Failed to read the image file";
+
+		  echo json_encode( $return );
+		  return;
+		}
+
+		$size = getimagesize($src);
+		$size_w = $size[0]; // natural width
+		$size_h = $size[1]; // natural height
+
+		$src_img_w = $size_w;
+		$src_img_h = $size_h;
+
+		$degrees = $data -> rotate;
+
+		// Rotate the source image
+		if (is_numeric($degrees) && $degrees != 0) {
+		  // PHP's degrees is opposite to CSS's degrees
+		  $new_img = imagerotate( $src_img, -$degrees, imagecolorallocatealpha($src_img, 0, 0, 0, 127) );
+
+		  imagedestroy($src_img);
+		  $src_img = $new_img;
+
+		  $deg = abs($degrees) % 180;
+		  $arc = ($deg > 90 ? (180 - $deg) : $deg) * M_PI / 180;
+
+		  $src_img_w = $size_w * cos($arc) + $size_h * sin($arc);
+		  $src_img_h = $size_w * sin($arc) + $size_h * cos($arc);
+
+		  // Fix rotated image miss 1px issue when degrees < 0
+		  $src_img_w -= 1;
+		  $src_img_h -= 1;
+		}
+
+		$tmp_img_w = $data -> width;
+		$tmp_img_h = $data -> height;
+		$dst_img_w = 220;
+		$dst_img_h = 220;
+
+		$src_x = $data -> x;
+		$src_y = $data -> y;
+
+		if ($src_x <= -$tmp_img_w || $src_x > $src_img_w) {
+		  $src_x = $src_w = $dst_x = $dst_w = 0;
+		} else if ($src_x <= 0) {
+		  $dst_x = -$src_x;
+		  $src_x = 0;
+		  $src_w = $dst_w = min($src_img_w, $tmp_img_w + $src_x);
+		} else if ($src_x <= $src_img_w) {
+		  $dst_x = 0;
+		  $src_w = $dst_w = min($tmp_img_w, $src_img_w - $src_x);
+		}
+
+		if ($src_w <= 0 || $src_y <= -$tmp_img_h || $src_y > $src_img_h) {
+		  $src_y = $src_h = $dst_y = $dst_h = 0;
+		} else if ($src_y <= 0) {
+		  $dst_y = -$src_y;
+		  $src_y = 0;
+		  $src_h = $dst_h = min($src_img_h, $tmp_img_h + $src_y);
+		} else if ($src_y <= $src_img_h) {
+		  $dst_y = 0;
+		  $src_h = $dst_h = min($tmp_img_h, $src_img_h - $src_y);
+		}
+
+		// Scale to destination position and size
+		$ratio = $tmp_img_w / $dst_img_w;
+		$dst_x /= $ratio;
+		$dst_y /= $ratio;
+		$dst_w /= $ratio;
+		$dst_h /= $ratio;
+
+		$dst_img = imagecreatetruecolor($dst_img_w, $dst_img_h);
+
+		// Add transparent background to destination image
+		imagefill($dst_img, 0, 0, imagecolorallocatealpha($dst_img, 0, 0, 0, 127));
+		imagesavealpha($dst_img, true);
+
+		$result = imagecopyresampled($dst_img, $src_img, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h);
+
+		if ($result) {
+		  if (!imagepng($dst_img, $dst)) {
+			$return['error'] = "Failed to save the cropped image file";
+		  }
+		} else {
+		  $return['error'] = "Failed to crop the image file";
+		}
+
+		imagedestroy($src_img);
+		imagedestroy($dst_img);
+
+		echo json_encode( $return );
+	  }
+
+
+			// if ( ! $this->image_lib->rotate())
+			// {
+			// 	echo $this->image_lib->display_errors();
+			// }
+		exit;
+	}
+
+	static function edit_product() {
+
+		$CI =& get_instance();
+		$data = $CI->input->post();
+		unset( $data['media-data'] );
+
+		if ( isset( $data['conditions' ] ) ) {
+
+			$data['conditions'] = implode( ',', $data['conditions'] );
+		}
+
+		if ( isset( $data['id'] ) && ( $data['id'] > -1 ) ) {
+
+			$id = $data['id'];
+			unset( $data['id'] );
+
+			$CI->db->update(
+				'products',
+				$data,
+				array( 'id' => $id )
+			);
+		}
+		else {
+
+			unset( $data['id'] );
+			$CI->db->insert(
+				'products',
+				$data
+			);
+
+			$id = $CI->db->insert_id();
+
+			rename( './assets/products/admin_new_entry', './assets/products/' . $id );
+		}
+
+		$product = $CI->product_model->get_product( $id );
+
+		echo json_encode( $product );
+		exit;
+	}
+
+	static function quick_search( $what, $type = null )
+	{
+		$CI =& get_instance();
+		$what .= 's';
+		$data = $CI->db->get($what)->result();
+		$return = array();
+
+		foreach( $data as $item ) {
+
+			$return[] = ($what == 'users') ? $item->user_log : $item->name;
+		}
+
+		echo json_encode( $return );
+		exit;
+	}
+
+	static function listing_deals( $listing_id ) {
+		$CI =& get_instance();
+		$deals = $CI->listing_deals->get_current_listing_deals( $listing_id );
+		$listing = $CI->listing_model->get_listing( $listing_id );
+
+		foreach ( $deals as $deal ): ?>
+		<div class="clearfix listing-deal padded round-all-md margin-bottom-lg">
+			<strong><?php echo $deal->title ?></strong>
+			<p><?php echo nl2br( $deal->body ) ?></p>
+			<?php echo anchor(site_url( 'dispensaries/' . $listing->slug . '/deal/' . $deal->id . '/print/' ), 'print', 'class="gray-button" target="_blank"' ); ?>
+		</div>
+		<?php endforeach;
+		exit;
+	}
+
+	static function listing_ads() {
+		$CI =& get_instance();
+		$ads = $CI->ads_model->get_by_user( $CI->user->ID );
+
+		?>
+		<div class="form-group">
+			<?php if ( count( $ads ) ):
+			echo '<table class="dataTable">'; ?>
+
+			<tr>
+				<td>Name</td>
+				<td>Created At</td>
+				<td>Starts</td>
+				<td>Ends</td>
+				<td>Status</td>
+				<td></td>
+			</tr>
+
+			<?php foreach ( $ads as $key => $ad ) {
+				$type = $ad->type == 'dispensary' ? 'dispensaries' : 'clinics';
+				?>
+				<tr <?php echo (($key % 2 == 0) ? 'class="even"' : '') ?>>
+					<td><?php echo anchor( site_url( $type . '/' . $ad->slug ), $ad->name, 'target="_blank"'); ?></td>
+					<td><?php echo date_for_display( $ad->created_at ) ?></td>
+					<td><?php echo date_for_display( $ad->start ) ?></td>
+					<td><?php echo date_for_display( $ad->end ) ?></td>
+					<td><?php echo $ad->status == 'new' ? 'Pending' : $ad->status ?></td>
+					<td><?php echo anchor( site_url( 'user/ad/' . $ad->id ), 'manage', 'target="_blank"'); ?></td>
+				</tr>
+				<?php
+			} ?>
+
+			</table>
+			<br /><p><a class="create-listing btn btn-default">Create new ad?</a></p>
+			<?php else: ?>
+			<p>You have no active AD's, would you like to <a class="create-listing">create One?</a></p>
+			<?php endif ?>
+		</div>
+		<?php
+		exit;
+	}
+
+	static function add_listing_ad() {
+
+		$CI =& get_instance();
+		$listings = $CI->listing_model->get_by_user( $CI->user->ID );
+		$gallery = $CI->user_model->get_gallery( $CI->user->ID, false );
+		// echo '<script src="' . $CI->load->theme_js('underscore') . '"></script>';
+		// echo '<script src="' . $CI->load->theme_js('jquery.stepify') . '"></script>';
+		?>
+		<div class="panel-group">
+			<div class="form-group panel">
+				<p>
+					<label for="listing_id">Choose listing for AD: </label>
+					<select name="listing_id" id="listing_id" class="form-control required">
+					<?php foreach ($listings as $listing): ?>
+						<option value="<?php echo $listing->id; ?>"><?php echo $listing->name; ?></option>
+					<?php endforeach ?>
+					</select>
+				</p>
+				<p>
+					<label for="ad_type">Choose the AD type:</label>
+					<select name="ad_type" id="ad_type" class="form-control">
+						<option value="home_ad">Home Page Impressions</option>
+						<option value="listing_ad">Directory Listing Click Ads</option>
+					</select>
+				</p>
+				<p>
+					<label for="daily_max">Max daily budget</label>
+					<?php echo form_input('daily_max', '$5.00', 'class="form-control" id="daily_max"'); ?>
+				</p>
+				<p>
+					<label for="start">Start Date (optional)</label>
+					<?php echo form_input('start', '', 'class="form-control datepicker" id="start"'); ?>
+				</p>
+				<p>
+					<label for="end">End Date (optional)</label>
+					<?php echo form_input('end', '', 'class="form-control datepicker" id="end"'); ?>
+				</p>
+				<p>
+					<label for="end">Target Distance In Miles</label>
+					<?php echo form_number(array('name' => 'target_distance', 'min' => 25, 'max' => 99), 25, 'class="form-control" id="target_distance"'); ?>
+				</p>
+			</div>
+
+			<div class="panel">
+				<div id="ad_image">
+					<p>Choose banner image (optional)</p>
+					<ul class="clearfix">
+						<li><a href="" class="user-thumbnail-clear round-all">Use Profile Image</a></li>
+					<?php foreach ($gallery as $image): ?>
+						<li>
+							<?php echo anchor('assets/user/' . $CI->user->ID . '/' . $image['name'], img(array(
+								'src' 		=> image_thumb('assets/user/' . $CI->user->ID . '/' . $image['name'], 85, 89, false),
+								'class'		=> 'user-thumbnail round-all'
+								)),
+								'rel="prettyPhoto[user_gallery]"'); ?>
+						</li>
+					<?php endforeach ?>
+					</ul>
+				</div>
+				<input type="hidden" name="custom_ad_image" id="custom_ad_image" value="" />
+				<br />
+			</div>
+
+			<div class="form-group panel">
+				<h3>Add card information</h3>
+				<p>
+					<label for="card_number">Card Number</label>
+					<?php echo form_input('card_number', '', 'class="form-control required" id="card_number"'); ?>
+				</p>
+				<p>
+					<label for="card_cvv">Card CVV</label>
+					<?php echo form_input('card_cvv', '', 'class="form-control required" id="card_cvv"'); ?>
+				</p>
+				<p>
+					<label for="exp_month">Exp. Month</label>
+					<?php echo form_dropdown('exp_month', getMonthList(false), '', 'class="form-control required" id="exp_month"'); ?>
+				</p>
+				<p>
+					<label for="exp_year">Exp. Year</label>
+					<?php echo form_dropdown('exp_year', getYearList(date('Y'), date('Y')+10), '', 'class="form-control required" id="exp_year"'); ?>
+				</p>
+				<div class="notice-box">
+					<p>You will be billed nothing at this time</p>
+				</div>
+			</div>
+		</div>
+		<script>
+		$(document).ready(function() {
+			$('.panel').stepify({
+				distribution: [1,1,1]
+			});
+		})
+		</script>
+		<?php
+		exit;
+	}
+
+	static function save_listing_ad() {
+		$CI =& get_instance();
+
+		$CI->load->library( 'Stripe' );
+
+		$card = array(
+			'number' 	=> $CI->input->post('card_number'),
+			'cvv' 		=> $CI->input->post('card_cvv'),
+			'exp_month' => $CI->input->post('exp_month'),
+			'exp_year' 	=> $CI->input->post('exp_year')
+		);
+
+		$CI->stripe->customer_create( $card, $CI->input->post('email') );
+
+		$data['user_id'] 				= $CI->user->ID;
+		$data['listing_id'] 			= $CI->input->post('listing_id');
+		$data['ad_type'] 				= $CI->input->post('ad_type');
+		$data['daily_max'] 				= $CI->input->post('daily_max');
+		$data['image_path'] 			= $CI->input->post('custom_ad_image');
+		$data['manager_first_name'] 	= $CI->input->post('first_name');
+		$data['manager_last_name']		= $CI->input->post('last_name');
+		$data['state'] 					= $CI->input->post('state');
+		$data['address'] 				= $CI->input->post('address');
+		$data['city'] 					= $CI->input->post('city');
+		$data['zip'] 					= $CI->input->post('zip');
+		$data['phone_number'] 			= $CI->input->post('phone_number');
+		$data['email'] 					= $CI->input->post('email');
+		$data['start'] 					= date_for_db( $CI->input->post('start') );
+		$data['end'] 					= date_for_db( $CI->input->post('end') );
+		$data['created_at'] 			= date('Y-m-d H:i:s', time());
+
+		$CI->ads_model->insert( $data );
+	}
+
+	static function manage_listings() {
+		$CI =& get_instance();
+		$listings = $CI->listing_model->get_by_user( $CI->user->ID, 'any' );
+
+		echo '<table class="dataTable">';
+		foreach ($listings as $key => $listing) {
+			$type = $listing->type == 'dispensary' ? 'dispensaries' : 'clinics';
+			?>
+					<tr <?php echo (($key % 2 == 0) ? 'class="even"' : '') ?>>
+						<td><?php echo form_checkbox('delete[]', (string)$listing->id); ?></td>
+						<td><?php echo $listing->name . ( $listing->status == 'pending' ? ' - Pending Approval' : '' ) ?></td>
+						<td><?php echo anchor( site_url( $type . '/' . $listing->slug ), 'View', 'target="_blank"'); ?></td>
+						<td><?php echo anchor( site_url( 'user/listing/' . $listing->id ), 'Manage', 'target="_blank"'); ?></td>
+						<td><?php echo anchor( site_url( 'pos/for/' . $listing->slug ), 'POS', 'target="_blank"'); ?></td>
+					</tr>
+			<?php
+		}
+		echo '</table>';
+		exit;
+	}
+
+	static function listing_add() {
+
+		?>
+		<div class="form-group">
+			<p>
+				<label for="name">Listing Type</label>
+				<?php echo form_dropdown('type', array( 'dispensary' => 'Dispensary', 'clinic' => 'Clinic'), '', 'class="form-control" id="name"'); ?>
+			</p>
+			<p>
+				<label for="name">Name</label>
+				<?php echo form_input('name', '', 'class="form-control" id="name"'); ?>
+			</p>
+			<p>
+				<label for="description">Description</label>
+				<?php echo form_textarea(array( 'name' => 'description', 'value' => '', 'class' => "form-control",  'id' => "description", 'rows' => "4" )); ?>
+			</p>
+			<p>
+				<label for="state">State</label>
+				<?php echo form_dropdown('state', getStateList(), '', 'class="form-control" id="state"'); ?>
+			</p>
+			<p>
+				<label for="region">Region</label>
+				<?php echo form_input('region', '', 'class="form-control" id="region"'); ?>
+			</p>
+			<p>
+				<label for="address">Address</label>
+				<?php echo form_textarea(array( 'name' => 'address', 'value' => '', 'class' => "form-control",  'id' => "address", 'rows' => "2")); ?>
+			</p>
+			<p>
+				<label for="city">City</label>
+				<?php echo form_input('city', '', 'class="form-control" id="city"'); ?>
+			</p>
+			<p>
+				<label for="zip">Zip</label>
+				<?php echo form_input('zip', '', 'class="form-control" id="zip"'); ?>
+			</p>
+			<p>
+				<label for="phone_number">Phone Number</label>
+				<?php echo form_input('phone_number', '', 'class="form-control" id="phone_number"'); ?>
+			</p>
+		<?php
+		exit;
+	}
+
+	static function listing_save() {
+
+		$CI =& get_instance();
+
+		echo $CI->listing_model->quick_insert( $CI->input->post() );
+		exit;
+	}
+
+	static function listing_delete() {
+
+		$CI =& get_instance();
+
+		foreach( $CI->input->post('delete') as $id ) {
+			$CI->listing_model->delete( $id );
+		}
+		exit;
+	}
+
+	static function user_settings( $action ) {
+
+		$CI =& get_instance();
+		$data = $CI->users_model->get_user( $CI->user->ID );
+
+		switch( $action ) {
+			case 'name':
+			?>
+			<div class="form-group">
+				<p>
+					<label for="listing_id">First Name: </label>
+					<?php echo form_input('first_name', $data->meta['first_name'], 'class="form-control"'); ?>
+				</p>
+				<p>
+					<label for="listing_id">Last Name: </label>
+					<?php echo form_input('last_name', $data->meta['last_name'], 'class="form-control"'); ?>
+				</p>
+			</div>
+			<?php
+			break;
+			case 'address':
+			?>
+			<div class="form-group">
+				<p>
+					<label for="listing_id">Address: </label>
+					<?php echo form_textarea(array( 'name' => 'address', 'value' => $data->meta['address'], 'class' => "form-control",  'id' => "address", 'rows' => "2")); ?>
+				</p>
+				<p>
+					<label for="address2">Address 2</label>
+					<?php echo form_textarea(array( 'name' => 'address2', 'value' => $data->meta['address2'], 'class' => "form-control",  'id' => "address2", 'rows' => "2")); ?>
+				</p>
+				<p>
+					<label for="city">City</label>
+					<?php echo form_input('city', $data->meta['city'], 'class="form-control" id="city"'); ?>
+				</p>
+				<p>
+					<label for="state">State</label>
+					<?php echo form_dropdown('state', getStateList(), $data->meta['state'], 'class="form-control" id="state"'); ?>
+				</p>
+				<p>
+					<label for="zip">Zip</label>
+					<?php echo form_input('zip', $data->meta['zip'], 'class="form-control" id="zip"'); ?>
+				</p>
+				<p>
+			</div>
+			<?php
+			break;
+			case 'drivers_license':
+			?>
+			<div class="form-group">
+				<p>
+					<label for="listing_id">Drivers License #: </label>
+					<?php echo form_input('drivers_license', $data->meta['dl_number'], 'class="form-control"'); ?>
+				</p>
+			</div>
+			<?php
+			break;
+			case 'mmj_card':
+			?>
+			<div class="form-group">
+				<p>
+					<label for="listing_id">MMJ Card #: </label>
+					<?php echo form_input('mmj_card', $data->meta['mmj_number'], 'class="form-control"'); ?>
+				</p>
+			</div>
+			<?php
+			break;
+			case 'phone':
+			?>
+			<div class="form-group">
+				<p>
+					<label for="listing_id">Phone #: </label>
+					<?php echo form_input('phone', $data->meta['phone_number'], 'class="form-control"'); ?>
+				</p>
+			</div>
+			<?php
+			break;
+			case 'medical_conditions':
+			?>
+			<div class="form-group">
+				<p>
+					<label for="listing_id">Medical Conditions: </label>
+					<?php echo form_textarea('medical_conditions', $data->meta['medical'], 'class="form-control"'); ?>
+				</p>
+			</div>
+			<?php
+			break;
+			case 'gender':
+			?>
+			<div class="form-group">
+				<p>
+					<label for="listing_id">Gender: </label>
+					<?php echo form_dropdown('gender', array('male' => 'Male', 'female' => 'Female'), $data->meta['gender'], 'class="form-control"'); ?>
+				</p>
+			</div>
+			<?php
+			break;
+		}
+
+		echo form_hidden('action', $action);
+		exit;
+	}
+
+	static function update_user_settings() {
+
+		$CI =& get_instance();
+		$data = $CI->users_model->get_user( $CI->user->ID );
+
+		switch( $CI->input->post('action') ) {
+			case 'name':
+				$CI->users_model->update_user_meta( $CI->user->ID, 'first_name', $CI->input->post('first_name') );
+				$CI->users_model->update_user_meta( $CI->user->ID, 'last_name', $CI->input->post('last_name') );
+				$updated = 'Name has';
+			break;
+
+			case 'address':
+				$CI->users_model->update_user_meta( $CI->user->ID, 'address', $CI->input->post('address') );
+				$CI->users_model->update_user_meta( $CI->user->ID, 'address2', $CI->input->post('address2') );
+				$CI->users_model->update_user_meta( $CI->user->ID, 'city', $CI->input->post('city') );
+				$CI->users_model->update_user_meta( $CI->user->ID, 'state', $CI->input->post('state') );
+				$CI->users_model->update_user_meta( $CI->user->ID, 'zip', $CI->input->post('zip') );
+				$updated = 'Address has';
+			break;
+
+			case 'drivers_license':
+				$CI->users_model->update_user_meta( $CI->user->ID, 'dl_number', $CI->input->post('drivers_license') );
+				$updated = 'Drivers License details have';
+			break;
+
+			case 'mmj_card':
+				$CI->users_model->update_user_meta( $CI->user->ID, 'mmj_number', $CI->input->post('mmj_card') );
+				$updated = 'MMJ Card details have';
+			break;
+
+			case 'phone':
+				$CI->users_model->update_user_meta( $CI->user->ID, 'phone_number', $CI->input->post('phone') );
+				$updated = 'Phone Number has';
+			break;
+
+			case 'medical_conditions':
+				$CI->users_model->update_user_meta( $CI->user->ID, 'medical', $CI->input->post('medical_conditions') );
+				$updated = 'Medical Condition has';
+			break;
+
+			case 'gender':
+				$CI->users_model->update_user_meta( $CI->user->ID, 'gender', $CI->input->post('gender') );
+				$updated = 'gender has';
+			break;
+		}
+
+		echo "<h2 class='center'>Your $updated been udpated!</h2>";
+		exit;
+	}
+
+	static function listing_settings( $action, $listing_id ) {
+
+		$CI =& get_instance();
+		$listing = $CI->listing_model->get_listing( $listing_id );
+
+		switch( $action ) {
+			case 'name':
+			?>
+			<div class="form-group">
+				<p>
+					<label for="name">Name</label>
+					<?php echo form_input('name', $listing->name, 'class="form-control" id="name"'); ?>
+				</p>
+			</div>
+			<?php
+			break;
+			case 'location':
+			?>
+			<div class="form-group">
+				<p>
+					<label for="state">State</label>
+					<?php echo form_dropdown('state', getStateList(), $listing->state, 'class="form-control" id="state"'); ?>
+				</p>
+				<p>
+					<label for="region">Region</label>
+					<?php echo form_input('region', $listing->region, 'class="form-control" id="region"'); ?>
+				</p>
+				<p>
+					<label for="address">Address</label>
+					<?php echo form_textarea('address', $listing->address, 'class="form-control" id="address" rows="2"'); ?>
+				</p>
+				<p>
+					<label for="city">City</label>
+					<?php echo form_input('city', $listing->city, 'class="form-control" id="city"'); ?>
+				</p>
+				<p>
+					<label for="zip">Zip</label>
+					<?php echo form_input('zip', $listing->zip, 'class="form-control" id="zip"'); ?>
+				</p>
+			</div>
+			<?php
+			break;
+			case 'Description':
+			?>
+			<div class="form-group">
+				<p>
+					<label for="description">Description</label>
+					<?php echo form_textarea('description', $listing->description, 'class="form-control" id="description"'); ?>
+				</p>
+			</div>
+			<?php
+			break;
+			case 'hours':
+			?>
+			<div class="form-group">
+
+				<table class="input-table">
+					<tr>
+						<td>
+							<p><label>Sunday Open</label>
+							<?php echo form_input('hours[sunday_open]', $listing->sunday_open, 'class="form-control time-control"' ) ?></p>
+						</td>
+						<td>
+							<p><label>Sunday Close</label>
+							<?php echo form_input('hours[sunday_close]', $listing->sunday_close, 'class="form-control time-control"' ) ?></p>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<p><label>Monday Open</label>
+							<?php echo form_input('hours[monday_open]', $listing->monday_open, 'class="form-control time-control"' ) ?></p>
+						</td>
+						<td>
+							<p><label>Monday Close</label>
+							<?php echo form_input('hours[monday_close]', $listing->monday_close, 'class="form-control time-control"' ) ?></p>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<p><label>Tuesday Open</label>
+							<?php echo form_input('hours[tuesday_open]', $listing->tuesday_open, 'class="form-control time-control"' ) ?></p>
+						</td>
+						<td>
+							<p><label>Tuesday Close</label>
+							<?php echo form_input('hours[tuesday_close]', $listing->tuesday_close, 'class="form-control time-control"' ) ?></p>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<p><label>Wednesday Open</label>
+							<?php echo form_input('hours[wednesday_open]', $listing->wednesday_open, 'class="form-control time-control"' ) ?></p>
+						</td>
+						<td>
+							<p><label>Wednesday Close</label>
+							<?php echo form_input('hours[wednesday_close]', $listing->wednesday_close, 'class="form-control time-control"' ) ?></p>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<p><label>Thursday Open</label>
+							<?php echo form_input('hours[thursday_open]', $listing->thursday_open, 'class="form-control time-control"' ) ?></p>
+						</td>
+						<td>
+							<p><label>Thursday Close</label>
+							<?php echo form_input('hours[thursday_close]', $listing->thursday_close, 'class="form-control time-control"' ) ?></p>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<p><label>Friday Open</label>
+							<?php echo form_input('hours[friday_open]', $listing->friday_open, 'class="form-control time-control"' ) ?></p>
+						</td>
+						<td>
+							<p><label>Friday Close</label>
+							<?php echo form_input('hours[friday_close]', $listing->friday_close, 'class="form-control time-control"' ) ?></p>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<p><label>Saturday Open</label>
+							<?php echo form_input('hours[saturday_open]', $listing->saturday_open, 'class="form-control time-control"' ) ?></p>
+						</td>
+						<td>
+							<p><label>Saturday Close</label>
+							<?php echo form_input('hours[saturday_close]', $listing->saturday_close, 'class="form-control time-control"' ) ?></p>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<?php
+			break;
+			case 'social':
+			?>
+			<div class="form-group">
+				<p>
+					<label for="phone_number">Phone_number</label>
+					<?php echo form_input('phone_number', $listing->phone_number, 'class="form-control" id="phone_number"'); ?>
+				</p>
+				<p>
+					<label for="website">Website</label>
+					<?php echo form_input('website', $listing->website, 'class="form-control" id="website"'); ?>
+				</p>
+				<p>
+					<label for="email">Email</label>
+					<?php echo form_input('email', $listing->email, 'class="form-control" id="email"'); ?>
+				</p>
+				<p>
+					<label for="twitter">Twitter</label>
+					<?php echo form_input('twitter', $listing->twitter, 'class="form-control" id="twitter"'); ?>
+				</p>
+				<p>
+					<label for="facebook">Facebook</label>
+					<?php echo form_input('facebook', $listing->facebook, 'class="form-control" id="facebook"'); ?>
+				</p>
+				<p>
+					<label for="linkedin">Linkedin</label>
+					<?php echo form_input('linkedin', $listing->linkedin, 'class="form-control" id="linkedin"'); ?>
+				</p>
+				<p>
+					<label for="pinterest">Pinterest</label>
+					<?php echo form_input('pinterest', $listing->pinterest, 'class="form-control" id="pinterest"'); ?>
+				</p>
+				<p>
+					<label for="google">Google</label>
+					<?php echo form_input('google', $listing->google, 'class="form-control" id="google"'); ?>
+				</p>
+				<p>
+					<label for="instagram">Instagram</label>
+					<?php echo form_input('instagram', $listing->instagram, 'class="form-control" id="instagram"'); ?>
+				</p>
+			</div>
+			<?php
+			break;
+			case 'options':
+			?>
+			<div class="form-group">
+				<p class="clear">
+					<?php echo form_checkbox('has_testing', true, ($listing->has_testing == true), 'class="checkbox-control" id="has_testing"'); ?>
+					<label for="has_testing"><span></span>Are the products tested?</label>
+				</p>
+				<p class="clear">
+					<?php echo form_checkbox('is_delivery', true, ($listing->is_delivery == true), 'class="checkbox-control" id="is_delivery"'); ?>
+					<label for="is_delivery"><span></span>Delivery?</label>
+				</p>
+				<p class="clear">
+					<?php echo form_checkbox('is_pickup', true, ($listing->is_pickup == true), 'class="checkbox-control" id="is_pickup"'); ?>
+					<label for="is_pickup"><span></span>Pickup?</label>
+				</p>
+				<p class="clear">
+					<?php echo form_checkbox('is_retail', true, ($listing->is_retail == true), 'class="checkbox-control" id="is_retail"'); ?>
+					<label for="is_retail"><span></span>Retail?</label>
+				</p>
+				<p class="clear">
+					<?php echo form_checkbox('is_18_up', true, ($listing->is_18_up == true), 'class="checkbox-control" id="is_18_up"'); ?>
+					<label for="is_18_up"><span></span>18 up only?</label>
+				</p>
+				<p class="clear">
+					<?php echo form_checkbox('is_21_up', true, ($listing->is_21_up == true), 'class="checkbox-control" id="is_21_up"'); ?>
+					<label for="is_21_up"><span></span>21 up only?</label>
+				</p>
+				<p class="clear">
+					<?php echo form_checkbox('has_security', true, ($listing->has_security == true), 'class="checkbox-control" id="has_security"'); ?>
+					<label for="has_security"><span></span>On Site Security?</label>
+				</p>
+				<p class="clear">
+					<?php echo form_checkbox('is_accessible', true, ($listing->is_accessible == true), 'class="checkbox-control" id="is_accessible"'); ?>
+					<label for="is_accessible"><span></span>Handicapped Accessible?</label>
+				</p>
+			</div>
+			<?php
+			break;
+		}
+
+		echo form_hidden('listing_id', $listing_id);
+		echo form_hidden('action', $action);
+		exit;
+	}
+
+	static function update_listing_settings() {
+
+		$CI =& get_instance();
+		$listing_id = $CI->input->post( 'listing_id');
+		$data = $CI->listing_model->get_listing( $listing_id );
+
+		switch( $CI->input->post('action') ) {
+			case 'name':
+				$CI->listing_model->update_part( 'name', $CI->input->post('name'), $listing_id );
+				$updated = 'Name has';
+			break;
+
+			case 'location':
+				$CI->listing_model->update_part( 'state', $CI->input->post('state'), $listing_id );
+				$CI->listing_model->update_part( 'region', $CI->input->post('region'), $listing_id );
+				$CI->listing_model->update_part( 'address', $CI->input->post('address'), $listing_id );
+				$CI->listing_model->update_part( 'city', $CI->input->post('city'), $listing_id );
+				$CI->listing_model->update_part( 'zip', $CI->input->post('zip'), $listing_id );
+				$updated = 'Location Details have';
+			break;
+
+			case 'Description':
+				$CI->listing_model->update_part( 'description', $CI->input->post('description'), $listing_id );
+				$updated = 'Description has';
+			break;
+
+			case 'options':
+				$CI->listing_model->update_part( 'has_testing', $CI->input->post('has_testing'), $listing_id );
+				$CI->listing_model->update_part( 'is_delivery', $CI->input->post('is_delivery'), $listing_id );
+				$CI->listing_model->update_part( 'is_pickup', $CI->input->post('is_pickup'), $listing_id );
+				$CI->listing_model->update_part( 'is_retail', $CI->input->post('is_retail'), $listing_id );
+				$CI->listing_model->update_part( 'is_18_up', $CI->input->post('is_18_up'), $listing_id );
+				$CI->listing_model->update_part( 'is_21_up', $CI->input->post('is_21_up'), $listing_id );
+				$CI->listing_model->update_part( 'has_security', $CI->input->post('has_security'), $listing_id );
+				$CI->listing_model->update_part( 'is_accessible', $CI->input->post('is_accessible'), $listing_id );
+				$updated = 'Options have';
+			break;
+
+			case 'hours':
+				$CI->listing_model->update_hours( $CI->input->post('hours'), $listing_id );
+				$updated = 'Hours have';
+			break;
+
+			case 'social':
+				$CI->listing_model->update_part( 'phone_number', $CI->input->post('phone_number'), $listing_id );
+				$CI->listing_model->update_part( 'website', $CI->input->post('website'), $listing_id );
+				$CI->listing_model->update_part( 'email', $CI->input->post('email'), $listing_id );
+				$CI->listing_model->update_part( 'twitter', $CI->input->post('twitter'), $listing_id );
+				$CI->listing_model->update_part( 'facebook', $CI->input->post('facebook'), $listing_id );
+				$CI->listing_model->update_part( 'linkedin', $CI->input->post('linkedin'), $listing_id );
+				$CI->listing_model->update_part( 'pinterest', $CI->input->post('pinterest'), $listing_id );
+				$CI->listing_model->update_part( 'google', $CI->input->post('google'), $listing_id );
+				$CI->listing_model->update_part( 'instagram', $CI->input->post('instagram'), $listing_id );
+				$updated = 'Contact Details have';
+			break;
+		}
+
+		echo "<h2 class='center'>Listing $updated been udpated!</h2>";
+		exit;
+	}
+
+	static function favorite_listing( $listing_id ) {
+
+		$CI =& get_instance();
+		$favorites = isset( $CI->user->meta['favorite_listing'] ) ? explode( ',', $CI->user->meta['favorite_listing'] ) : array();
+
+		if ( in_array( $listing_id, $favorites ) ) {
+			$key = array_search( $listing_id, $favorites );
+			unset( $favorites[$key] );
+		}
+		else {
+			$favorites[] = $listing_id;
+		}
+
+		$CI->users_model->update_user_meta( $CI->user->ID, 'favorite_listing', implode(',', $favorites) );
+		exit;
+	}
+
+	static function favorite_strain( $strain_id ) {
+
+		$CI =& get_instance();
+		$favorites = isset( $CI->user->meta['favorite_strain'] ) ? explode( ',', $CI->user->meta['favorite_strain'] ) : array();
+
+		if ( in_array( $strain_id, $favorites ) ) {
+			$key = array_search( $strain_id, $favorites );
+			unset( $favorites[$key] );
+		}
+		else {
+			$favorites[] = $strain_id;
+		}
+
+		$CI->users_model->update_user_meta( $CI->user->ID, 'favorite_strain', implode(',', $favorites) );
+		exit;
+	}
+
+	static function request_access( $listing_id = 0 ) {
+
+		if ( $listing_id == 0 ) {
+			echo 'There was an issue, please try again!';
+			die();
+		}
+
+		$CI =& get_instance();
+		$listing = $CI->listing_model->get_listing( $listing_id );
+		$user = $CI->user->meta;
+		$customer_of = 'customer_of_' . $listing_id;
+		$customer_pending = 'customer_pending_' . $listing_id;
+
+		if ( $user[$customer_of] ) {
+			echo '<h2 class="center">You are already a customer of this dispensary</h2>';
+
+			exit;
+		}
+
+		if ( $user[$customer_pending] ) {
+			echo '<h2 class="center">Your request has already been sent and is awaiting approval</h2>';
+
+			exit;
+		}
+
+		?>
+		<div class="form-group">
+			<p>
+				<label for="first_name">First Name</label>
+				<?php echo form_input('first_name', $user['first_name'], 'class="form-control required" id="name"'); ?>
+			</p>
+			<p>
+				<label for="last_name">Last Name</label>
+				<?php echo form_input('last_name',$user['last_name'], 'class="form-control required" id="name"'); ?>
+			</p>
+			<p>
+				<label for="name">Email</label>
+				<?php echo form_input('email', $CI->user->user_email, 'class="form-control required" id="name"'); ?>
+			</p>
+			<p>
+				<label for="address_1">Address</label>
+				<?php echo form_textarea(array( 'name' => 'address_1', 'value' => $user['address'], 'class' => "form-control",  'id' => "address_1", 'rows' => "2")); ?>
+			</p>
+			<p>
+				<label for="address_2">Address 2</label>
+				<?php echo form_textarea(array( 'name' => 'address_2', 'value' => $user['address_2'], 'class' => "form-control",  'id' => "address_2", 'rows' => "2")); ?>
+			</p>
+			<p>
+				<label for="city">City</label>
+				<?php echo form_input('city', $user['city'], 'class="form-control" id="city"'); ?>
+			</p>
+			<p>
+				<label for="state">State</label>
+				<?php echo form_dropdown('state', getStateList(), $user['state'], 'class="form-control" id="state"'); ?>
+			</p>
+			<p>
+				<label for="zipcode">Zip</label>
+				<?php echo form_input('zipcode', $user['zip'], 'class="form-control" id="zipcode"'); ?>
+			</p>
+			<p>
+				<label for="phone_number">Phone Number</label>
+				<?php echo form_input('phone_number', $user['phone_number'], 'class="form-control" id="phone_number"'); ?>
+			</p>
+			<p>
+				<label for="comments">Comments</label>
+				<?php echo form_textarea(array( 'name' => 'comments', 'value' => '', 'class' => "form-control",  'id' => "comments", 'rows' => "2")); ?>
+			</p>
+			<?php echo form_hidden( 'user_id', $CI->user->ID ); ?>
+		<?php
+		exit;
+	}
+
+	static function patient_request( $listing_id ) {
+		$CI =& get_instance();
+		$listing = $CI->listing_model->get_listing( $listing_id );
+		$user = $CI->user_model->get_user( $CI->input->post( 'user_id' ) );
+		$data =  $CI->input->post();
+		$data['user_id'] = $user->ID;
+		$data['status'] = 'Pending';
+		$customer_id = $CI->Customer->save( $data, $listing_id );
+
+		ob_start(); ?>
+		<p>An Xherb user has requested access to your Dispensary!</p>
+		<p>The user has submitted the following information for your review. Please use the link at the bottom of the email to accept or reject them as a patient.</p>
+		<p>
+			<label for="first_name">First Name: </label>
+			<?php echo $CI->input->post( 'first_name' ); ?>
+		</p>
+		<p>
+			<label for="last_name">Last Name: </label>
+			<?php echo $CI->input->post( 'last_name' ); ?>
+		</p>
+		<p>
+			<label for="name">Email: </label>
+			<?php echo $CI->input->post( 'email' ); ?>
+		</p>
+		<p>
+			<label for="address_1">Address: </label>
+			<?php echo nl2br( $CI->input->post( 'address_1' ) ); ?>
+		</p>
+		<p>
+			<label for="address_2">Address 2: </label>
+			<?php echo nl2br( $CI->input->post( 'address_2' ) ); ?>
+		</p>
+		<p>
+			<label for="city">City: </label>
+			<?php echo $CI->input->post( 'city' ); ?>
+		</p>
+		<p>
+			<label for="state">State: </label>
+			<?php echo $CI->input->post( 'state' ); ?>
+		</p>
+		<p>
+			<label for="zipcode">Aipcode: </label>
+			<?php echo $CI->input->post( 'zipcode' ); ?>
+		</p>
+		<p>
+			<label for="phone_number">Phon Number: </label>
+			<?php echo $CI->input->post( 'phone' ); ?>
+		</p>
+		<p>
+			<label for="comments">Comments: </label>
+			<?php echo nl2br( $CI->input->post( 'comments' ) ); ?>
+		</p>
+		<p style="text-align: center">
+			<a class="button-primary" href="<?php echo site_url( 'user/' . $user->user_log ); ?>">View Profile</a>
+			<a class="button-primary" href="<?php echo site_url( 'dispensaires/edit_customers/' . $listing_id ); ?>"></a>
+		</p>
+		<?php
+		$message = ob_get_contents();
+		ob_end_clean();
+
+		// $CI->xherb_email->set('to_email', $CI->input->post( 'email' ) );
+
+		$CI->xherb_email->set('to_email', $listing->email );
+		$CI->xherb_email->set('subject', 'Xherb - New patient request' );
+		$CI->xherb_email->set('message', $message);
+
+		if ( $CI->xherb_email->send() ) {
+			echo json_encode( array( 'action' => 'success', 'message' => '<p class="center">Your request has been sent, the dispensary will contact you with further details</p>' ) );
+
+			$salted = $CI->user_model->salt_password( $CI->input->post( 'email' ) . date( "Y-m-d H:i:s" ) );
+			$CI->users_model->update_user_meta( $user->ID, 'customer_pending_' . $listing_id, $salted );
+
+			$CI->xherb_email->set('to_email', $CI->input->post( 'email' ) );
+			$CI->xherb_email->set('subject', 'Xherb - New patient request' );
+			$CI->xherb_email->set('message', '<p>Your patient request for ' . $listing->name . ' has been sent and is awaiting approval!</p>');
+			$CI->xherb_email->send();
+		}
+		else {
+			echo json_encode( array( 'action' => 'error', 'message' => '<div class="error-box"><p class="center error">There was an error processing your request, please try again later.</p></div>' ) );
+		}
+
+		exit;
+	}
+
+	static function add_review() {
+
+		$CI =& get_instance();
+
+		if ( $CI->listing_review_model->save_or_update( $CI->input->post() ) ) {
+			echo json_encode( array( 'action' => 'success', 'message' => '<p class="center">Your review has been submitted</p>' ) );
+		}
+		else {
+			echo json_encode( array( 'action' => 'error', 'message' => '<div class="error-box"><p class="center">There was an issue submitting your review, please try again!</p></div>' ) );
+		}
+
+		exit;
+	}
+
+	static function listing_review( $listing_id = 0 ) {
+
+		$CI =& get_instance();
+		$user = $CI->user->meta;
+		$review = $CI->listing_review_model->get_user_review( $CI->user->ID, $listing_id );
+		$listing = $CI->listing_model->get_listing( $listing_id );
+
+		?>
+		<div class="form-group">
+			<p>
+				<span class="star-rating">
+					<label for="price">Price</label>
+					<span class="star <?php echo $review->price == '5' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->price == '4' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->price == '3' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->price == '2' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->price == '1' ? 'active' : ''; ?>"></span>
+				</span>
+				<?php echo form_hidden( 'price', $review->price ); ?>
+			</p>
+			<p>
+				<span class="star-rating">
+					<label for="staff">Staff</label>
+					<span class="star <?php echo $review->staff == '5' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->staff == '4' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->staff == '3' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->staff == '2' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->staff == '1' ? 'active' : ''; ?>"></span>
+				</span>
+				<?php echo form_hidden( 'staff', $review->staff ); ?>
+			</p>
+			<p>
+				<span class="star-rating">
+					<label for="professionalism">Professionalism</label>
+					<span class="star <?php echo $review->professionalism == '5' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->professionalism == '4' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->professionalism == '3' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->professionalism == '2' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->professionalism == '1' ? 'active' : ''; ?>"></span>
+				</span>
+				<?php echo form_hidden( 'professionalism', $review->professionalism ); ?>
+			</p>
+			<?php if ( $listing->type != 'clinic' ): ?>
+			<p>
+				<span class="star-rating">
+					<label for="bud_quality">Bud Quality</label>
+					<span class="star <?php echo $review->bud_quality == '5' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->bud_quality == '4' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->bud_quality == '3' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->bud_quality == '2' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->bud_quality == '1' ? 'active' : ''; ?>"></span>
+				</span>
+				<?php echo form_hidden( 'bud_quality', $review->bud_quality ); ?>
+			</p>
+			<?php endif; ?>
+			<p>
+				<span class="star-rating">
+					<label for="reliability">Reliability</label>
+					<span class="star <?php echo $review->reliability == '5' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->reliability == '4' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->reliability == '3' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->reliability == '2' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->reliability == '1' ? 'active' : ''; ?>"></span>
+				</span>
+				<?php echo form_hidden( 'reliability', $review->reliability ); ?>
+			</p>
+			<p>
+				<label for="review_comment">Review Headline</label>
+				<?php echo form_input( array( 'name' => 'review_title', 'value' => $review->title, 'class' => "form-control required",  'id' => "review_title" ) ); ?>
+			</p>
+			<p>
+				<label for="review_comment">What did you think?</label>
+				<?php echo form_textarea( array( 'name' => 'review_comment', 'value' => $review->body, 'class' => "form-control required",  'id' => "review_comment", 'rows' => "5" ) ); ?>
+			</p>
+			<?php echo form_hidden( 'listing_id', $listing_id );
+			if ( strlen( $review->body ) ) {
+				echo form_hidden( 'update_review', true );
+			}
+			?>
+		</div>
+		<?php
+		exit;
+	}
+
+	static function reviews( $listing_id ) {
+		$CI =& get_instance();
+		$data['listing'] = $CI->listing_model->get_listing( $listing_id );
+		$data['reviews'] = $CI->listing_review_model->get_listing_reviews( $listing_id );
+
+		$CI->load->view( 'dispensaries/reviews', $data );
+	}
+
+	static function add_product_review() {
+
+		$CI =& get_instance();
+
+		if ( $CI->product_review_model->save_or_update( $CI->input->post() ) ) {
+			echo '<p class="center" style="display: none;">Your review has been submitted</p>';
+		}
+		else {
+			echo '<p class="center" style="display: none;">There was an issue submitting your review, please try again!</p>';
+		}
+
+		exit;
+	}
+
+	static function strain_reviews( $strain_id = 0 ) {
+
+		$CI =& get_instance();
+		$user = $CI->user->meta;
+		$review = $CI->strain_review_model->get_user_review( $CI->user->ID, $strain_id );
+		echo $strain_id;
+		?>
+		<div class="form-group">
+			<p>
+				<span class="star-rating">
+					<label for="rating">Overall Rating</label>
+					<span class="star <?php echo $review->rating == '5' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->rating == '4' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->rating == '3' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->rating == '2' ? 'active' : ''; ?>"></span>
+					<span class="star <?php echo $review->rating == '1' ? 'active' : ''; ?>"></span>
+				</span>
+				<?php echo form_hidden( 'rating', $review->rating ); ?>
+			</p>
+			<p>
+				<label for="review_comment">Review Headline</label>
+				<?php echo form_input( array( 'name' => 'review_title', 'value' => $review->title, 'class' => "form-control required",  'id' => "review_title" ) ); ?>
+			</p>
+			<p>
+				<label for="review_comment">What did you think?</label>
+				<?php echo form_textarea( array( 'name' => 'review_comment', 'value' => $review->comment, 'class' => "form-control required",  'id' => "review_comment", 'rows' => "5" ) ); ?>
+			</p>
+			<?php echo form_hidden( 'strain_id', $strain_id );
+			if ( strlen( $review->comment ) ) {
+				echo form_hidden( 'update_review', true );
+			}
+			?>
+		</div>
+		<?php
+		exit;
+	}
+
+	static function get_strain_reviews( $strain_id ) {
+		$CI =& get_instance();
+		$data['strain'] = $CI->strains_model->get_strain( $strain_id );
+		$data['reviews'] = $CI->strain_review_model->get_strain_reviews( $strain_id );
+
+		$CI->load->view( 'strains/reviews', $data );
+	}
+
+	static function add_strain_review() {
+
+		$CI =& get_instance();
+
+		if ( $CI->strain_review_model->save_or_update( $CI->input->post() ) ) {
+			echo json_encode( array( 'action' => 'success', 'message' => '<p class="center">Your review has been submitted</p>' ) );
+		}
+		else {
+			echo json_encode( array( 'action' => 'error', 'message' => '<div class="error-box"><p class="center">There was an issue submitting your review, please try again!</p></div>' ) );
+		}
+
+		exit;
+	}
+
+	static function login_body() {
+
+		$CI =& get_instance();
+
+		$CI->load->view( 'users/login' );
+		exit;
+	}
+
+	static function register_body() {
+
+		$CI =& get_instance();
+
+		$CI->load->view( 'users/register' );
+		exit;
+	}
+
+	static function set_location() {
+
+	}
+}
